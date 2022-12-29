@@ -1,0 +1,6 @@
+.my-card{
+    
+    cursor:pointer;
+    transform-style: preserve-3d;
+    transform: perspective(1000px);
+}
