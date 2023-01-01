@@ -1,11 +1,30 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { AuthContext } from '../../Context/AuthProvider';
 
 const Login = () => {
     const { register,formState:{errors}, handleSubmit } = useForm();
+    const{signIn}=useContext(AuthContext)
+    const [loginError,setLoginError]=useState('')
+    const location= useLocation();
+    const navigate= useNavigate();
+
+    const from = location.state?.from?.pathname || '/';
    const handleLogin = data=>{
-        console.log(data)
+    console.log(data)
+    setLoginError('')
+        signIn(data.email,data.password)
+            .then(result=>{
+                const user= result.user
+                console.log(user)
+                navigate(from,{replace:true});
+            })
+            .catch(error=>{
+                console.log(error)
+                setLoginError(error.message)
+            })
+        
    }
     return (
         <div className='h-[800px] flex justify-center items-center'>
@@ -18,7 +37,7 @@ const Login = () => {
                         <label className="label">
                             <span className="label-text">E-mail</span>
                         </label>
-                        <input {...register("email",{
+                        <input type='email' {...register("email",{
                             required:"Email address is required"
                         })} className="input input-bordered w-full max-w-xs"></input>
                         {errors.email && <p className='text-red-500'>{errors.email?.message}</p>}
@@ -27,7 +46,7 @@ const Login = () => {
                         <label className="label">
                             <span className="label-text">Password</span>
                         </label>
-                        <input {...register("password",{
+                        <input type='password' {...register("password",{
                             required:"Password is required",
                             minLength:{value:6,message:"Password Should be 6 Character long"}
                         })} className="input input-bordered w-full max-w-xs"></input>
@@ -37,7 +56,9 @@ const Login = () => {
                         {errors.password && <p className='text-red-500'>{errors.password?.message}</p>}
                     </div>
                     <input type="submit" value="Login" className='btn btn-accent w-full'></input>
-
+                        <div>
+                            { loginError && <p className='text-red-500'>{loginError}</p>}
+                        </div>
                 </form>
                 <p className='mt-3'>New to Doctor's Portal?<Link className='text-secondary' to="/signup"> Create an account</Link></p>
                 <div className='divider'>OR</div>
