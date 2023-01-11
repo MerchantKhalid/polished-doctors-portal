@@ -1,31 +1,57 @@
 import React, { useContext, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-hot-toast';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../Context/AuthProvider';
+import useToken from '../../hooks/useToken';
 
 const Signup = () => {
     const { register,handleSubmit,formState:{errors}} = useForm();
     const {createUser,updateUser} = useContext(AuthContext)
     const [signpError,setSignupError]= useState('')
+    const [createdUserEmail,setCreatedUserEmail]= useState('')
+    const [token]= useToken(createdUserEmail)
+    const navigate = useNavigate()
+    if(token){
+        navigate('/')
+    }
     const handleSigunp=data=>{
         setSignupError('')
         createUser(data.email,data.password)
         .then((result) => {
             const user= result.user; 
-            toast('User Created Successfully')
+            toast.success('User Created Successfully')
             const userInfo ={
                 displayName:data.name
             } 
             updateUser(userInfo) 
-             .then(()=>{})
+             .then(()=>{
+                saveUser(data.name,data.email)
+             })
              .catch(error=>console.log(error)) 
         }).catch((error) => {
             setSignupError(error.message)
             console.log(error)
         });
-        console.log(data)
+        
+        const saveUser= (name,email)=>{
+            const user={name,email}
+            fetch(`http://localhost:5000/users`,{
+                method:'POST',
+                headers:{
+                    'content-type':'application/json'
+                },
+                body:JSON.stringify(user)
+            })
+            .then(res=>res.json())
+            .then(data=>{
+                setCreatedUserEmail(email)
+               
+            })
+        }
     }
+
+    
     return (
         <div className='h-[800px] flex justify-center items-center'>
             <div className='w-96 p-5 shadow-xl'>
